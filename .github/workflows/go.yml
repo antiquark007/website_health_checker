@@ -1,0 +1,39 @@
+name: Go Project Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Install Dependencies
+      run: go mod tidy
+
+    - name: Build Project
+      run: go build -v ./...
+
+    - name: Run Tests
+      run: go test -v ./...
+
+    - name: Link Check Test
+      run: |
+        echo "Running link validation test..."
+        result=$(go run . --url pexels.com)
+        if [[ "$result" == "[UP] pexels.com is reachable" ]]; then
+          echo "$result"
+        else
+          echo "Link check failed. Expected '[UP] pexels.com is reachable' but got: $result"
+          exit 1
+        fi
